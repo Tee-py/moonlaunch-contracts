@@ -1,6 +1,16 @@
 [profile.default]
 src = "src"
 out = "out"
+test = "test"
 libs = ["lib"]
+via_ir = true
+
+[rpc_endpoints]
+core_testnet = "${FRAX_TESTNET_RPC_URL}"
+core_mainnet = "${FRAX_MAINNET_RPC_URL}"
+
+[etherscan]
+core_testnet = { key = "${FRAXSCAN_API_KEY}", url = "https://api-holesky.fraxscan.com/api", chain = 2522 }
+core_mainnet = { key = "${FRAXSCAN_API_KEY}", url = "https://api.fraxscan.com/api", chain = 252 }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
