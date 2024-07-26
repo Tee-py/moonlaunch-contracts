@@ -33,9 +33,9 @@ case $NETWORK in
         ;;
     mainnet)
         echo "Running contract deployment to $1..."
-        forge script script/Curve.s.sol:MainnetDeploymentScript --chain-id 252 --rpc-url $FRAX_MAINNET_RPC_URL \
-        --etherscan-api-key $FRAXSCAN_API_KEY --verifier-url https://api.fraxscan.com/api \
-        --broadcast --verify -vvvv
+        forge script script/Curve.s.sol:MainnetDeploymentScript --chain-id 1116 --rpc-url $MAINNET_RPC_URL \
+        --etherscan-api-key $CORESCAN_API_KEY --verifier-url $CORESCAN_API \
+        --broadcast --verify -vvvv --legacy
         ;;
     *)
         echo "Unsupported network argument provided..."

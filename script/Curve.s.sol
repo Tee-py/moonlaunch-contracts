@@ -10,14 +10,13 @@ contract TestnetDeploymentScript is Script {
     address swapRouter;
     address fraxswapFactory;
     uint256 tradingFeeRate = 100; // 1%
-    uint256 migrationFeeRate = 500; // 5%
+    uint256 migrationFeeRate = 200; // 2%
     uint256 creationFee = 10**15; // 0.001 ether
-    uint256 initVirtualEthReserve = 0.0001 ether;
+    uint256 minimumTargetMCap = 10_000 ether;
 
     function setRouterAndFactory() public virtual {
         swapRouter = 0x74F56a7560eF0C72Cf6D677e3f5f51C2D579fF15;
         fraxswapFactory = 0xe0b8838e8d73ff1CA193E8cc2bC0Ebf7Cf86F620;
-
     }
 
     function run() public {
@@ -26,7 +25,7 @@ contract TestnetDeploymentScript is Script {
         vm.startBroadcast(deployerPrivateKey);
         BondingCurveAMM curve = new BondingCurveAMM(
             tradingFeeRate, migrationFeeRate, 
-            creationFee, initVirtualEthReserve, 
+            creationFee, minimumTargetMCap,
             feeCollector, swapRouter, fraxswapFactory
         );
         console.log("Curve Address: ", address(curve));
@@ -47,7 +46,7 @@ contract TestnetTransactionScript is Script {
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
     function setCurve() public virtual {
-        curve = BondingCurveAMM(payable(0xD62BfbF2050e8fEAD90e32558329D43A6efce4C8));
+        curve = BondingCurveAMM(payable(0xFcA69B9033C414cBCfa24b30228376fd040b70B2));
     }
 
     function setThreshold() public virtual {
@@ -56,13 +55,13 @@ contract TestnetTransactionScript is Script {
 
     function runTokenLaunch() public returns (MoonLaunchToken) {
         TokenLaunchParam memory param = TokenLaunchParam({
-            name: "Ramp Token",
-            symbol: "RTK",
-            description: "Community token for ramp.fun",
-            image: "ramp.jpg",
-            twitterLink: "x.com/ramp.fun",
-            telegramLink: "t.me/ramp.fun",
-            website: "https://ramp-fun.vercel.app"
+            name: "Moon Launch Token",
+            symbol: "MLT",
+            description: "Community token for moonlaunch",
+            image: "mlaunch.jpg",
+            twitterLink: "x.com/mlaunch.com",
+            telegramLink: "t.me/mlaunch",
+            website: "https://mlaunch.vercel.app"
         });
         uint256 targetMCap = 70_000 ether;
         address token = curve.launchToken(param, targetMCap);
@@ -93,7 +92,7 @@ contract TestnetTransactionScript is Script {
         MoonLaunchToken token = runTokenLaunch();
         uint256 tokenAmountOut = runSwapEthForTokens(token, 0.0001 ether);
         runSwapTokensForEth(token, tokenAmountOut/2);
-        runMigrateLiquidity(token);
+        //runMigrateLiquidity(token);
         vm.stopBroadcast();
     }
 }
