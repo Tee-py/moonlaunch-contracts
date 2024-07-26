@@ -28,7 +28,7 @@ contract MainnetForkTest is Test {
 
     function setRouterAndFactory() public virtual {
         swapRouter = 0x74F56a7560eF0C72Cf6D677e3f5f51C2D579fF15;
-        // uniswapV2Factory = IUniswapV2Router02(swapRouter).factory();
+        uniswapV2Factory = IUniswapV2Router02(swapRouter).factory();
     }
 
     function runSetUp() internal {
@@ -40,7 +40,6 @@ contract MainnetForkTest is Test {
             tradingFeeRate, 
             migrationFeeRate, 
             creationFee, 
-            minimumLaunchPrice,
             minimumTargetMCap,
             feeCollector,
             swapRouter,
@@ -55,7 +54,7 @@ contract MainnetForkTest is Test {
             telegramLink: "t.me/test",
             website: "test.com"
         });
-        address token = curve.launchToken{value: creationFee}(param, 1 ether, 100 ether);
+        address token = curve.launchToken{value: creationFee}(param, 100 ether);
         testToken = MoonLaunchToken(token);
     }
     
@@ -214,23 +213,23 @@ contract MainnetForkTest is Test {
     //     assertEq(afterCurveBal - beforeCurveBal, amountIn - fee);
 
     //     // --- TRANSFER EVENT ---
-    //     Vm.Log memory transferLog = logs[0];
-    //     ( uint256 transferAmount ) = abi.decode(transferLog.data, (uint256));
-    //     assertEq(transferLog.topics.length, 3);
-    //     assertEq(transferLog.topics[0], keccak256("Transfer(address,address,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(transferLog.topics[1]), (address)), address(curve));
-    //     assertEq(abi.decode(abi.encodePacked(transferLog.topics[2]), (address)), trader);
-    //     assertEq(transferAmount, amountOutMin);
+    //     // Vm.Log memory transferLog = logs[0];
+    //     // ( uint256 transferAmount ) = abi.decode(transferLog.data, (uint256));
+    //     // assertEq(transferLog.topics.length, 3);
+    //     // assertEq(transferLog.topics[0], keccak256("Transfer(address,address,uint256)"));
+    //     // assertEq(abi.decode(abi.encodePacked(transferLog.topics[1]), (address)), address(curve));
+    //     // assertEq(abi.decode(abi.encodePacked(transferLog.topics[2]), (address)), trader);
+    //     // assertEq(transferAmount, amountOutMin);
 
     //     // --- PRICE UPDATE EVENT ---
-    //     Vm.Log memory priceUpdateLog = logs[1];
-    //     ( uint256 price, uint256 mcapEth, ) = abi.decode(priceUpdateLog.data, (uint256, uint256, uint256));
-    //     assertEq(priceUpdateLog.topics.length, 3);
-    //     assertEq(priceUpdateLog.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[1]), (address)), address(testToken));
-    //     assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[2]), (address)), trader);
-    //     assertEq(price, lastPrice);
-    //     assertEq(mcapEth, lastMcapInEth);
+    //     // Vm.Log memory priceUpdateLog = logs[1];
+    //     // ( uint256 price, uint256 mcapEth, ) = abi.decode(priceUpdateLog.data, (uint256, uint256, uint256));
+    //     // assertEq(priceUpdateLog.topics.length, 3);
+    //     // assertEq(priceUpdateLog.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
+    //     // assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[1]), (address)), address(testToken));
+    //     // assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[2]), (address)), trader);
+    //     // assertEq(price, lastPrice);
+    //     // assertEq(mcapEth, lastMcapInEth);
 
     //     // --- TRADE EVENT ---
     //     Vm.Log memory tradeLog = logs[2];
@@ -248,187 +247,183 @@ contract MainnetForkTest is Test {
     //     assertEq(isBuy, true);
     // }
 
-    function test_swap_tokens_for_eth() public {
-        vm.deal(trader, 100 ether);
-        vm.startPrank(trader);
-        uint256 tokenAmountOut = curve.swapEthForTokens{value: 1 ether}(address(testToken), 1 ether, 0, block.timestamp + 1 minutes);
-        uint256 expected = curve.calcAmountOutFromEth(address(testToken), 1 ether);
-        console.log(tokenAmountOut, expected);
-        // uint256 amountIn = tokenAmountOut / 2;
-        // uint256 amountOutMin = curve.calcAmountOutFromToken(address(testToken), amountIn);
-        //console.log(amountIn, amountOutMin);
-        // uint256 fee = (amountOutMin * curve.FEE_DENOMINATOR() * curve.tradingFeeRate())/((curve.FEE_DENOMINATOR() - curve.tradingFeeRate()) * curve.FEE_DENOMINATOR());
-        //testToken.approve(address(curve), amountIn);
-        //vm.recordLogs();
-        // uint256 beforeFeeCollectorBal = feeCollector.balance;
-        // uint256 beforeTraderTokenBal = testToken.balanceOf(trader);
-        // uint256 beforeCurveBal = address(curve).balance;
-        // uint256 beforeCurveTokenBal = testToken.balanceOf(address(curve));
-        // (,uint256 beforeTokenReserve, uint256 beforeVirtualTokenReserve, uint256 beforeEthReserve,,,,,,,,,) = curve.tokenPool(address(testToken));
-        //uint256 amountOut = curve.swapTokensForEth(address(testToken), amountIn, amountOutMin, block.timestamp + 1 minutes);
-        //console.log(amountOut);
-        vm.stopPrank();
-
-        //Vm.Log[] memory logs = vm.getRecordedLogs();
-
-        // ---- POOL VERIFICATION ----
-        // (
-        //     , uint256 afterTokenReserve, uint256 afterVirtualTokenReserve, uint256 afterEthReserve,
-        //     uint256 virtualEthReserve, uint256 curveConstant,,,,
-        //     ,,, bool migrated
-        // ) = curve.tokenPool(address(testToken));
-        // assertEq(migrated, false);
-        // assertEq(virtualEthReserve, curveConstant / afterVirtualTokenReserve);
-        // assertEq(amountOut, amountOutMin);
-        // assertEq(beforeEthReserve - afterEthReserve, amountOut + fee);
-        // assertEq(afterTokenReserve - beforeTokenReserve, amountIn);
-        // assertEq(afterVirtualTokenReserve - beforeVirtualTokenReserve, amountIn);
-
-        // // ----- TRANSFER CHECKS (ETH & TOKEN TRANSFER) -----
-        // uint256 afterFeeCollectorBal = feeCollector.balance;
-        // uint256 afterTraderTokenBal = testToken.balanceOf(trader);
-        // uint256 afterCurveBal = address(curve).balance;
-        // uint256 afterCurveTokenBal = testToken.balanceOf(address(curve));
-        // assertEq(beforeTraderTokenBal - afterTraderTokenBal, amountIn);
-        // assertEq(afterFeeCollectorBal - beforeFeeCollectorBal, fee);
-        // assertEq(beforeCurveBal - afterCurveBal, amountOut + fee);
-        // assertEq(afterCurveTokenBal - beforeCurveTokenBal, amountIn);
-
-        // // ----- TRANSFER EVENT CHECKS -----
-        // Vm.Log memory transferLog = logs[0];
-        // ( uint256 transferAmount ) = abi.decode(transferLog.data, (uint256));
-        // assertEq(transferLog.topics.length, 3);
-        // assertEq(transferLog.topics[0], keccak256("Transfer(address,address,uint256)"));
-        // assertEq(abi.decode(abi.encodePacked(transferLog.topics[1]), (address)), trader);
-        // assertEq(abi.decode(abi.encodePacked(transferLog.topics[2]), (address)), address(curve));
-        // assertEq(transferAmount, amountIn);
-
-        // // ----- PRICE UPDATE EVENT CHECKS ----
-        // Vm.Log memory priceUpdateLog = logs[1];
-        // assertEq(priceUpdateLog.topics.length, 3);
-        // assertEq(priceUpdateLog.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
-        // assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[1]), (address)), address(testToken));
-        // assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[2]), (address)), trader);
-
-        // // ----- TRADE EVENT CHECKS -----
-        // Vm.Log memory tradeLog = logs[2];
-        // ( 
-        //     uint256 tradeAmountIn, uint256 tradeAmountOut, 
-        //     uint256 tradeFee,,bool isBuy 
-        // ) = abi.decode(tradeLog.data, (uint256, uint256, uint256, uint256, bool));
-        // assertEq(tradeLog.topics.length, 3);
-        // assertEq(tradeLog.topics[0], keccak256("Trade(address,address,uint256,uint256,uint256,uint256,bool)"));
-        // assertEq(abi.decode(abi.encodePacked(tradeLog.topics[1]), (address)), trader);
-        // assertEq(abi.decode(abi.encodePacked(tradeLog.topics[2]), (address)), address(testToken));
-        // assertEq(tradeAmountIn, amountIn);
-        // assertEq(tradeAmountOut, amountOutMin);
-        // assertEq(tradeFee, fee);
-        // assertEq(isBuy, false);
-    }
-
-    // function test_migrate_liquidity() public {
-    //     // Buy enough tokens to trigger liquidity migration
+    // function test_swap_tokens_for_eth() public {
+    //     vm.deal(trader, 100 ether);
+    //     vm.startPrank(trader);
+    //     uint256 tokenAmountOut = curve.swapEthForTokens{value: 1 ether}(address(testToken), 1 ether, 0, block.timestamp + 1 minutes);
+    //     uint256 amountIn = tokenAmountOut / 2;
+    //     uint256 amountOutMin = curve.calcAmountOutFromToken(address(testToken), amountIn);
+    //     uint256 fee = (amountOutMin * curve.FEE_DENOMINATOR() * curve.tradingFeeRate())/((curve.FEE_DENOMINATOR() - curve.tradingFeeRate()) * curve.FEE_DENOMINATOR());
+    //     testToken.approve(address(curve), amountIn);
     //     vm.recordLogs();
-    //     uint256 amountIn = 101 ether;
-    //     uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
     //     uint256 beforeFeeCollectorBal = feeCollector.balance;
-    //     // Buy tokens enough to exceed threshold
-    //     curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
-    //     uint256 afterFeeCollectorBal = feeCollector.balance;
-    //     ( 
-    //         ,uint256 tokenReserve, uint256 virtualTokenReserve, uint256 ethReserve, 
-    //         uint256 virtualEthReserve,,,,,,
-    //         ,, bool migrated 
-    //     ) = curve.tokenPool(address(testToken));
-    //     IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
-    //     IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
-    //     address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
-    //     IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
-    //     ( uint112 ethReservePool, uint112 tokenReservePool, ) = pair.getReserves();
-    //     uint256 expectedMigrationFee = (amountIn - fee) * migrationFeeRate / curve.FEE_DENOMINATOR();
-        
-    //     // Assertions
-    //     assertEq(tokenReserve, 0);
-    //     assertEq(virtualTokenReserve, 0);
-    //     assertEq(ethReserve, 0);
-    //     assertEq(virtualEthReserve, 0);
-    //     assertEq(migrated, true);
-    //     assertEq(testToken.isApprovable(), true);
-    //     assertEq(afterFeeCollectorBal - beforeFeeCollectorBal, expectedMigrationFee + fee);
-    //     assertEq(tokenReservePool, curve.TOTAL_SUPPLY() - curve.INIT_REAL_TOKEN_RESERVE());
-    //     assertEq(ethReservePool, amountIn - fee - expectedMigrationFee);
-    //     assertEq(testToken.balanceOf(address(curve)), 0);
+    //     uint256 beforeTraderTokenBal = testToken.balanceOf(trader);
+    //     uint256 beforeCurveBal = address(curve).balance;
+    //     uint256 beforeCurveTokenBal = testToken.balanceOf(address(curve));
+    //     (,uint256 beforeTokenReserve, uint256 beforeVirtualTokenReserve, uint256 beforeEthReserve,,,,,,,,,) = curve.tokenPool(address(testToken));
+    //     uint256 amountOut = curve.swapTokensForEth(address(testToken), amountIn, amountOutMin, block.timestamp + 1 minutes);
+    //     vm.stopPrank();
 
-    //     // Logs
     //     Vm.Log[] memory logs = vm.getRecordedLogs();
-    //     // Vm.Log memory addLiqEvent = logs[11];
-    //     Vm.Log memory migrateLiqEvent = logs[logs.length - 2];
-        
-    //     // Migrate Liquidity Event Test
-    //     ( uint256 ethAmount, uint256 tokenAmount, uint256 migFee, ) = abi.decode(migrateLiqEvent.data, (uint256, uint256, uint256, uint256));
-    //     assertEq(migrateLiqEvent.topics.length, 3);
-    //     assertEq(migrateLiqEvent.topics[0], keccak256("MigrateLiquidity(address,address,uint256,uint256,uint256,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(migrateLiqEvent.topics[1]), (address)), address(testToken));
-    //     assertEq(abi.decode(abi.encodePacked(migrateLiqEvent.topics[2]), (address)), pairAddr);
-    //     assertEq(ethAmount, ethReservePool);
-    //     assertEq(tokenAmount, tokenReservePool);
-    //     assertEq(migFee, expectedMigrationFee);
+
+    //     // ---- POOL VERIFICATION ----
+    //     (
+    //         , uint256 afterTokenReserve, uint256 afterVirtualTokenReserve, uint256 afterEthReserve,
+    //         uint256 virtualEthReserve, uint256 curveConstant,,,,
+    //         ,,, bool migrated
+    //     ) = curve.tokenPool(address(testToken));
+    //     assertEq(migrated, false);
+    //     assertEq(virtualEthReserve, curveConstant / afterVirtualTokenReserve);
+    //     assertEq(amountOut, amountOutMin);
+    //     assertEq(beforeEthReserve - afterEthReserve, amountOut + fee);
+    //     assertEq(afterTokenReserve - beforeTokenReserve, amountIn);
+    //     assertEq(afterVirtualTokenReserve - beforeVirtualTokenReserve, amountIn);
+
+    //     // ----- TRANSFER CHECKS (ETH & TOKEN TRANSFER) -----
+    //     uint256 afterFeeCollectorBal = feeCollector.balance;
+    //     uint256 afterTraderTokenBal = testToken.balanceOf(trader);
+    //     uint256 afterCurveBal = address(curve).balance;
+    //     uint256 afterCurveTokenBal = testToken.balanceOf(address(curve));
+    //     assertEq(beforeTraderTokenBal - afterTraderTokenBal, amountIn);
+    //     assertEq(afterFeeCollectorBal - beforeFeeCollectorBal, fee);
+    //     assertEq(beforeCurveBal - afterCurveBal, amountOut + fee);
+    //     assertEq(afterCurveTokenBal - beforeCurveTokenBal, amountIn);
+
+    //     // ----- TRANSFER EVENT CHECKS -----
+    //     // Vm.Log memory transferLog = logs[0];
+    //     // ( uint256 transferAmount ) = abi.decode(transferLog.data, (uint256));
+    //     // assertEq(transferLog.topics.length, 3);
+    //     // assertEq(transferLog.topics[0], keccak256("Transfer(address,address,uint256)"));
+    //     // assertEq(abi.decode(abi.encodePacked(transferLog.topics[1]), (address)), trader);
+    //     // assertEq(abi.decode(abi.encodePacked(transferLog.topics[2]), (address)), address(curve));
+    //     // assertEq(transferAmount, amountIn);
+
+    //     // ----- PRICE UPDATE EVENT CHECKS ----
+    //     Vm.Log memory priceUpdateLog = logs[1];
+    //     assertEq(priceUpdateLog.topics.length, 3);
+    //     assertEq(priceUpdateLog.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
+    //     assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[1]), (address)), address(testToken));
+    //     assertEq(abi.decode(abi.encodePacked(priceUpdateLog.topics[2]), (address)), trader);
+
+    //     // ----- TRADE EVENT CHECKS -----
+    //     Vm.Log memory tradeLog = logs[2];
+    //     ( 
+    //         uint256 tradeAmountIn, uint256 tradeAmountOut, 
+    //         uint256 tradeFee,,bool isBuy 
+    //     ) = abi.decode(tradeLog.data, (uint256, uint256, uint256, uint256, bool));
+    //     assertEq(tradeLog.topics.length, 3);
+    //     assertEq(tradeLog.topics[0], keccak256("Trade(address,address,uint256,uint256,uint256,uint256,bool)"));
+    //     assertEq(abi.decode(abi.encodePacked(tradeLog.topics[1]), (address)), trader);
+    //     assertEq(abi.decode(abi.encodePacked(tradeLog.topics[2]), (address)), address(testToken));
+    //     assertEq(tradeAmountIn, amountIn);
+    //     assertEq(tradeAmountOut, amountOutMin);
+    //     assertEq(tradeFee, fee);
+    //     assertEq(isBuy, false);
     // }
 
-    // // function test_swap_eth_for_tokens_on_router() public {
-    // //     vm.recordLogs();
-    // //     vm.startPrank(trader);
-    // //     vm.deal(trader, 10 ether);
-    // //     uint256 amountIn = 4 ether;
-    // //     //uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
+    function test_migrate_liquidity() public {
+        // Buy enough tokens to trigger liquidity migration
+        vm.recordLogs();
+        uint256 amountIn = 140 ether;
+        uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
+        uint256 beforeFeeCollectorBal = feeCollector.balance;
+        // Buy tokens enough to exceed threshold
+        curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
+        uint256 afterFeeCollectorBal = feeCollector.balance;
+        ( 
+            ,uint256 tokenReserve, uint256 virtualTokenReserve, uint256 ethReserve, 
+            uint256 virtualEthReserve,,,,,,
+            ,, bool migrated 
+        ) = curve.tokenPool(address(testToken));
+        IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
+        IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
+        address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
+        IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
+        ( uint112 ethReservePool, uint112 tokenReservePool, ) = pair.getReserves();
+        uint256 expectedMigrationFee = (amountIn - fee) * migrationFeeRate / curve.FEE_DENOMINATOR();
+        
+        // Assertions
+        assertEq(tokenReserve, 0);
+        assertEq(virtualTokenReserve, 0);
+        assertEq(ethReserve, 0);
+        assertEq(virtualEthReserve, 0);
+        assertEq(migrated, true);
+        assertEq(testToken.isApprovable(), true);
+        assertEq(afterFeeCollectorBal - beforeFeeCollectorBal, expectedMigrationFee + fee);
+        assertEq(tokenReservePool, curve.TOTAL_SUPPLY() - curve.INIT_REAL_TOKEN_RESERVE());
+        assertEq(ethReservePool, amountIn - fee - expectedMigrationFee);
+        assertEq(testToken.balanceOf(address(curve)), 0);
 
-    // //     // Buy tokens enough to exceed threshold and migrate liquidity to fraxswap
-    // //     curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
+        // Logs
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        // Vm.Log memory addLiqEvent = logs[11];
+        Vm.Log memory migrateLiqEvent = logs[logs.length - 2];
+        
+        // Migrate Liquidity Event Test
+        ( uint256 ethAmount, uint256 tokenAmount, uint256 migFee, ) = abi.decode(migrateLiqEvent.data, (uint256, uint256, uint256, uint256));
+        assertEq(migrateLiqEvent.topics.length, 3);
+        assertEq(migrateLiqEvent.topics[0], keccak256("MigrateLiquidity(address,address,uint256,uint256,uint256,uint256)"));
+        assertEq(abi.decode(abi.encodePacked(migrateLiqEvent.topics[1]), (address)), address(testToken));
+        assertEq(abi.decode(abi.encodePacked(migrateLiqEvent.topics[2]), (address)), pairAddr);
+        assertEq(ethAmount, ethReservePool);
+        assertEq(tokenAmount, tokenReservePool);
+        assertEq(migFee, expectedMigrationFee);
+    }
 
-    // //     IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
-    // //     IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
-    // //     address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
-    // //     IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
-    // //     uint256 beforeTokenBal = testToken.balanceOf(trader);
-    // //     ( uint112 beforeEthReserve, uint112 beforeTokenReserve, ) = pair.getReserves();
-    // //     // Buy Tokens on FraxSwap router
-    // //     uint256 amountOut = curve.swapEthForTokens{value: 1 ether}(address(testToken), 1 ether, 0, block.timestamp + 1 minutes);
-    // //     uint256 afterTokenBal = testToken.balanceOf(trader);
-    // //     ( uint112 afterEthReserve, uint112 afterTokenReserve, ) = pair.getReserves();
-    // //     vm.stopPrank();
+    function test_swap_eth_for_tokens_on_router() public {
+        vm.recordLogs();
+        vm.startPrank(trader);
+        vm.deal(trader, 150 ether);
+        uint256 amountIn = 110 ether;
+        //uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
 
-    // //     assertEq(beforeTokenReserve - afterTokenReserve, amountOut);
-    // //     assertEq(afterEthReserve > beforeEthReserve, true);
-    // //     assertEq(afterTokenBal - beforeTokenBal, amountOut);
-    // // }
+        // Buy tokens enough to exceed threshold and migrate liquidity to fraxswap
+        curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
 
-    // // function test_swap_tokens_for_eth_on_router() public {
-    // //     vm.recordLogs();
-    // //     vm.startPrank(trader);
-    // //     vm.deal(trader, 10 ether);
-    // //     uint256 amountIn = 4 ether;
-    // //     //uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
+        IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
+        IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
+        address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
+        IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
+        uint256 beforeTokenBal = testToken.balanceOf(trader);
+        ( uint112 beforeEthReserve, uint112 beforeTokenReserve, ) = pair.getReserves();
+        // Buy Tokens on FraxSwap router
+        uint256 amountOut = curve.swapEthForTokens{value: 1 ether}(address(testToken), 1 ether, 0, block.timestamp + 1 minutes);
+        uint256 afterTokenBal = testToken.balanceOf(trader);
+        ( uint112 afterEthReserve, uint112 afterTokenReserve, ) = pair.getReserves();
+        vm.stopPrank();
 
-    // //     // Buy tokens enough to exceed threshold and migrate liquidity to fraxswap
-    // //     uint256 tokenAmount = curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
+        assertEq(beforeTokenReserve - afterTokenReserve, amountOut);
+        assertEq(afterEthReserve > beforeEthReserve, true);
+        assertEq(afterTokenBal - beforeTokenBal, amountOut);
+    }
 
-    // //     IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
-    // //     IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
-    // //     address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
-    // //     IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
-    // //     uint256 beforeTokenBal = testToken.balanceOf(trader);
-    // //     ( uint112 beforeEthReserve, uint112 beforeTokenReserve, ) = pair.getReserves();
-    // //     // Sell Tokens on FraxSwap router
-    // //     testToken.approve(address(curve), tokenAmount/2);
-    // //     curve.swapTokensForEth(address(testToken), tokenAmount/2, 0, block.timestamp + 1 minutes);
-    // //     uint256 afterTokenBal = testToken.balanceOf(trader);
-    // //     ( uint112 afterEthReserve, uint112 afterTokenReserve, ) = pair.getReserves();
-    // //     vm.stopPrank();
+    function test_swap_tokens_for_eth_on_router() public {
+        vm.recordLogs();
+        vm.startPrank(trader);
+        vm.deal(trader, 200 ether);
+        uint256 amountIn = 110 ether;
+        //uint256 fee = amountIn * tradingFeeRate / curve.FEE_DENOMINATOR();
 
-    // //     assertEq(afterTokenReserve - beforeTokenReserve, tokenAmount/2);
-    // //     assertEq(beforeEthReserve > afterEthReserve, true);
-    // //     assertEq(beforeTokenBal - afterTokenBal, tokenAmount/2);
-    // // }
+        // Buy tokens enough to exceed threshold and migrate liquidity to fraxswap
+        uint256 tokenAmount = curve.swapEthForTokens{value: amountIn}(address(testToken), amountIn, 0, block.timestamp + 1 minutes);
+
+        IUniswapV2Router02 router = IUniswapV2Router02(swapRouter);
+        IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapV2Factory);
+        address pairAddr = uniswapFactory.getPair(address(testToken), router.WETH());
+        IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
+        uint256 beforeTokenBal = testToken.balanceOf(trader);
+        ( uint112 beforeEthReserve, uint112 beforeTokenReserve, ) = pair.getReserves();
+        // Sell Tokens on FraxSwap router
+        testToken.approve(address(curve), tokenAmount/2);
+        curve.swapTokensForEth(address(testToken), tokenAmount/2, 0, block.timestamp + 1 minutes);
+        uint256 afterTokenBal = testToken.balanceOf(trader);
+        ( uint112 afterEthReserve, uint112 afterTokenReserve, ) = pair.getReserves();
+        vm.stopPrank();
+
+        assertEq(afterTokenReserve - beforeTokenReserve, tokenAmount/2);
+        assertEq(beforeEthReserve > afterEthReserve, true);
+        assertEq(beforeTokenBal - afterTokenBal, tokenAmount/2);
+    }
 
     // function test_launch_token_with_zero_creation_fee() public {
     //     vm.prank(admin);

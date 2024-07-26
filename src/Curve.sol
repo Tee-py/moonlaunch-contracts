@@ -52,10 +52,10 @@ contract BondingCurveAMM is ReentrancyGuard {
     uint256 public constant FEE_DENOMINATOR = 100_00;
     uint256 public constant MAX_FEE = 10_00; // 10%
     uint256 public constant INIT_REAL_TOKEN_RESERVE = 793_100_000 ether;
+    uint256 public constant INIT_VIRTUAL_TOKEN_RESERVE = 1073000000 ether;
     uint256 public constant TOTAL_SUPPLY = 1_000_000_000 ether;
     IUniswapV2Router02 public immutable swapRouter;
     IUniswapV2Factory public immutable uniswapV2Factory;
-    uint256 public minimumLaunchPrice;
     uint256 public minimumTargetMCap;
     uint256 public creationFee;
     uint256 public tradingFeeRate;
@@ -121,7 +121,6 @@ contract BondingCurveAMM is ReentrancyGuard {
         uint256 _tradingFeeRate,
         uint256 _migrationFeeRate,
         uint256 _creationFee,
-        uint256 _minimumLaunchPrice,
         uint256 _minimumTargetMCap,
         address feeRecipient,
         address router,
@@ -131,7 +130,6 @@ contract BondingCurveAMM is ReentrancyGuard {
         tradingFeeRate = _tradingFeeRate;
         migrationFeeRate = _migrationFeeRate;
         creationFee = _creationFee;
-        minimumLaunchPrice = _minimumLaunchPrice;
         minimumTargetMCap = _minimumTargetMCap;
         swapRouter = IUniswapV2Router02(router);
         uniswapV2Factory = IUniswapV2Factory(factory);
@@ -140,22 +138,21 @@ contract BondingCurveAMM is ReentrancyGuard {
     }
 
 
-    function launchToken(TokenLaunchParam memory param, uint256 launchPrice, uint256 targetMCap) external payable onlyUnPaused returns (address) {
+    function launchToken(TokenLaunchParam memory param, uint256 targetMCap) external payable onlyUnPaused returns (address) {
         if (msg.value < creationFee) revert InsufficientPayment();
-        if (launchPrice < minimumLaunchPrice) revert InvalidLaunchPrice();
         if (targetMCap < minimumTargetMCap) revert InvalidTargetMCap();
         if (creationFee > 0) SafeTransferLib.safeTransferETH(protocolFeeRecipient, creationFee);
-        (uint256 curveConstant, uint256 initVirtualTokenReserve, uint256 _initVirtualEthReserve) = calculateTokenCurveVariables(launchPrice, targetMCap);
+        (uint256 curveConstant, uint256 initVirtualEthReserve) = calculateTokenCurveVariables(targetMCap);
         MoonLaunchToken token = new MoonLaunchToken(param.name, param.symbol, address(this), msg.sender, TOTAL_SUPPLY);
         Pool storage pool = tokenPool[address(token)];
         pool.token = token;
         pool.tokenReserve = INIT_REAL_TOKEN_RESERVE;
-        pool.virtualTokenReserve = initVirtualTokenReserve;
+        pool.virtualTokenReserve = INIT_VIRTUAL_TOKEN_RESERVE;
         pool.ethReserve = 0;
-        pool.virtualEthReserve = _initVirtualEthReserve;
+        pool.virtualEthReserve = initVirtualEthReserve;
         pool.curveConstant = curveConstant;
         pool.targetMCap = targetMCap;
-        pool.lastPrice = _initVirtualEthReserve.divWadDown(initVirtualTokenReserve);
+        pool.lastPrice = initVirtualEthReserve.divWadDown(INIT_VIRTUAL_TOKEN_RESERVE);
         pool.lastMcapInEth = TOTAL_SUPPLY.mulWadUp(pool.lastPrice);
         pool.lastTimestamp = block.timestamp;
         pool.lastBlock = block.number;
@@ -205,9 +202,7 @@ contract BondingCurveAMM is ReentrancyGuard {
             uint256 newVirtualEthReserve = tokenPool[token].virtualEthReserve + amountIn;
             uint256 newVirtualTokenReserve = tokenPool[token].curveConstant/newVirtualEthReserve;
             amountOut = tokenPool[token].virtualTokenReserve - newVirtualTokenReserve;
-            console.log(newVirtualEthReserve, newVirtualTokenReserve, tokenPool[token].curveConstant);
             if (amountOut > tokenPool[token].tokenReserve) {
-                console.log('amount out greater');
                 amountOut = tokenPool[token].tokenReserve;
             }
             if (amountOut < amountOutMin) revert InsufficientOutput();
@@ -247,9 +242,7 @@ contract BondingCurveAMM is ReentrancyGuard {
             if (tokenPool[token].creator == address(0)) revert InvalidToken();
             uint256 newVirtualTokenReserve = tokenPool[token].virtualTokenReserve + amountIn;
             uint256 newVirtualEthReserve = tokenPool[token].curveConstant / newVirtualTokenReserve;
-            console.log(tokenPool[token].curveConstant, tokenPool[token].virtualTokenReserve, tokenPool[token].virtualEthReserve);
             amountOut = tokenPool[token].virtualEthReserve - newVirtualEthReserve;
-            //console.log(amountOut, tokenPool[token].virtualEthReserve, tokenPool[token].ethReserve);
             tokenPool[token].virtualTokenReserve = newVirtualTokenReserve;
             tokenPool[token].virtualEthReserve = newVirtualEthReserve;
             tokenPool[token].lastPrice = newVirtualEthReserve.divWadDown(newVirtualTokenReserve);
@@ -370,21 +363,13 @@ contract BondingCurveAMM is ReentrancyGuard {
         y = (k1 + 1 ether) * (startPriceInCore);
     }
 
-    //function _calculateLastPrice(uint256 y, uint256)
-
-    function calculateTokenCurveVariables(uint256 startPriceInCore, uint256 targetMCapCore) public pure returns (uint256 curveConstant, uint256 initVirtualTokenReserve, uint256 _initVirtualEthReserve) {
-        (uint256 y, uint256 k1) = _calculateYAndK1(startPriceInCore, targetMCapCore);
-        _initVirtualEthReserve = y;
-        initVirtualTokenReserve = k1;
-        curveConstant = y * k1;
+    function calculateTokenCurveVariables(uint256 targetMCapCore) public pure returns (uint256 curveConstant, uint256 initVirtualEthReserve) {
+        initVirtualEthReserve = targetMCapCore * (INIT_VIRTUAL_TOKEN_RESERVE - INIT_REAL_TOKEN_RESERVE)/INIT_REAL_TOKEN_RESERVE;
+        curveConstant = initVirtualEthReserve * INIT_VIRTUAL_TOKEN_RESERVE;
     }
 
     function setMinimumTargetMCap(uint256 value) external onlyAdmin {
         minimumTargetMCap = value;
-    }
-
-    function setMinimumLaunchPrice(uint256 value) external onlyAdmin {
-        minimumLaunchPrice = value;
     }
 
     function setProtocolFeeRecipient(address recpt) external onlyAdmin {
