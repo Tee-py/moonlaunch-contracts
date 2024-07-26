@@ -24,7 +24,6 @@ contract MainnetForkTest is Test {
     uint256 creationFee = 10**15; // 0.001 ether
     uint256 minimumLaunchPrice = 0.0001 ether;
     uint256 minimumTargetMCap = 100 ether;
-    //uint256 initVirtualEthReserve = 0.03 ether;
 
     function setRouterAndFactory() public virtual {
         swapRouter = 0x74F56a7560eF0C72Cf6D677e3f5f51C2D579fF15;
@@ -69,106 +68,104 @@ contract MainnetForkTest is Test {
     //     curve.calculateTokenCurveVariables(startPrice, targetMCap);
     // }
 
-    // function test_contract_variables() public view {
-    //     assertEq(curve.admin(), admin);
-    //     assertEq(curve.tradingFeeRate(), tradingFeeRate);
-    //     assertEq(curve.migrationFeeRate(), migrationFeeRate);
-    //     assertEq(curve.creationFee(), creationFee);
-    //     assertEq(address(curve.swapRouter()), swapRouter);
-    //     assertEq(curve.paused(), false);
-    //     assertEq(curve.protocolFeeRecipient(), feeCollector);
-    //     assertEq(curve.FEE_DENOMINATOR(), 100_00);
-    //     assertEq(curve.MAX_FEE(), 10_00);
-    //     assertEq(curve.TOTAL_SUPPLY(), 1_000_000_000 ether);
-    //     //assertEq(curve.INIT_VIRTUAL_TOKEN_RESERVE(), 1073000000 ether);
-    //     assertEq(curve.INIT_REAL_TOKEN_RESERVE(), 793100000 ether);
-    //     //assertEq(curve.initVirtualEthReserve(), initVirtualEthReserve);
-    //     //assertEq(curve.migrationThreshold(), curve.CURVE_CONSTANT()/(curve.INIT_VIRTUAL_TOKEN_RESERVE() - curve.INIT_REAL_TOKEN_RESERVE()) - initVirtualEthReserve);
-    //     //assertEq(curve.CURVE_CONSTANT(), initVirtualEthReserve * curve.INIT_VIRTUAL_TOKEN_RESERVE());
-    // }
+    function test_contract_variables() public view {
+        assertEq(curve.admin(), admin);
+        assertEq(curve.tradingFeeRate(), tradingFeeRate);
+        assertEq(curve.migrationFeeRate(), migrationFeeRate);
+        assertEq(curve.creationFee(), creationFee);
+        assertEq(address(curve.swapRouter()), swapRouter);
+        assertEq(curve.paused(), false);
+        assertEq(curve.protocolFeeRecipient(), feeCollector);
+        assertEq(curve.FEE_DENOMINATOR(), 100_00);
+        assertEq(curve.MAX_FEE(), 10_00);
+        assertEq(curve.TOTAL_SUPPLY(), 1_000_000_000 ether);
+        assertEq(curve.INIT_VIRTUAL_TOKEN_RESERVE(), 1073000000 ether);
+        assertEq(curve.INIT_REAL_TOKEN_RESERVE(), 793100000 ether);
+    }
 
-    // function test_launch_token() public {
-    //     TokenLaunchParam memory param = TokenLaunchParam({
-    //         name: "Test Token 2",
-    //         symbol: "TTK2",
-    //         description: "Token launch for testing purpose",
-    //         image: "image.jpg",
-    //         twitterLink: "x.com/test2",
-    //         telegramLink: "t.me/test2",
-    //         website: "test2.com"
-    //     });
-    //     vm.startPrank(msg.sender);
-    //     vm.recordLogs();
-    //     uint256 beforeLaunchFeeCollectorBal = feeCollector.balance;
-    //     uint256 beforeLaunchCreatorBal = msg.sender.balance;
-    //     address token = curve.launchToken{value: creationFee}(param, 1 ether, 100 ether);
-    //     uint256 afterLaunchFeeCollectorBal = feeCollector.balance;
-    //     uint256 afterLaunchCreatorBal = msg.sender.balance;
-    //     vm.stopPrank();
-    //     Vm.Log[] memory logs = vm.getRecordedLogs();
-    //     Vm.Log memory transferEvent = logs[0];
-    //     Vm.Log memory launchEvent = logs[1];
-    //     Vm.Log memory priceUpdateEvent = logs[2];
+    function test_launch_token() public {
+        TokenLaunchParam memory param = TokenLaunchParam({
+            name: "Test Token 2",
+            symbol: "TTK2",
+            description: "Token launch for testing purpose",
+            image: "image.jpg",
+            twitterLink: "x.com/test2",
+            telegramLink: "t.me/test2",
+            website: "test2.com"
+        });
+        vm.startPrank(msg.sender);
+        vm.recordLogs();
+        uint256 beforeLaunchFeeCollectorBal = feeCollector.balance;
+        uint256 beforeLaunchCreatorBal = msg.sender.balance;
+        address token = curve.launchToken{value: creationFee}(param, 100 ether);
+        uint256 afterLaunchFeeCollectorBal = feeCollector.balance;
+        uint256 afterLaunchCreatorBal = msg.sender.balance;
+        vm.stopPrank();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        Vm.Log memory transferEvent = logs[0];
+        Vm.Log memory launchEvent = logs[1];
+        Vm.Log memory priceUpdateEvent = logs[2];
 
-    //     // ---- TRANSFER EVENT TOPICS & DATA
-    //     assertEq(transferEvent.topics.length, 3);
-    //     assertEq(transferEvent.topics[0], keccak256("Transfer(address,address,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(transferEvent.topics[1]), (address)), address(0));
-    //     assertEq(abi.decode(abi.encodePacked(transferEvent.topics[2]), (address)), address(curve));
-    //     assertEq(abi.decode(transferEvent.data, (uint256)), curve.TOTAL_SUPPLY());
+        // ---- TRANSFER EVENT TOPICS & DATA
+        assertEq(transferEvent.topics.length, 3);
+        assertEq(transferEvent.topics[0], keccak256("Transfer(address,address,uint256)"));
+        assertEq(abi.decode(abi.encodePacked(transferEvent.topics[1]), (address)), address(0));
+        assertEq(abi.decode(abi.encodePacked(transferEvent.topics[2]), (address)), address(curve));
+        assertEq(abi.decode(transferEvent.data, (uint256)), curve.TOTAL_SUPPLY());
         
-    //     // ---- LAUNCH EVENT TOPICS & DATA
-    //     (
-    //         address _token, string memory name, string memory symbol, 
-    //         string memory description, string memory image, string memory twitterLink, 
-    //         string memory telegramLink, string memory website, uint256 timestamp
-    //     ) = abi.decode(launchEvent.data, (address,string,string,string,string,string,string,string,uint256));
-    //     assertEq(launchEvent.topics.length, 2);
-    //     assertEq(launchEvent.topics[0], keccak256("TokenLaunch(address,address,string,string,string,string,string,string,string,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(launchEvent.topics[1]), (address)), msg.sender);
-    //     assertEq(_token, token);
-    //     assertEq(name, param.name);
-    //     assertEq(symbol, param.symbol);
-    //     assertEq(description, param.description);
-    //     assertEq(image, param.image);
-    //     assertEq(twitterLink, param.twitterLink);
-    //     assertEq(telegramLink, param.telegramLink);
-    //     assertEq(website, param.website);
-    //     assertEq(timestamp, block.timestamp);
+        // ---- LAUNCH EVENT TOPICS & DATA
+        (
+            address _token, uint256 targetMCapCore, string memory name, string memory symbol, 
+            string memory description, string memory image, string memory twitterLink, 
+            string memory telegramLink, string memory website, uint256 timestamp
+        ) = abi.decode(launchEvent.data, (address,uint256,string,string,string,string,string,string,string,uint256));
+        assertEq(launchEvent.topics.length, 2);
+        assertEq(launchEvent.topics[0], keccak256("TokenLaunch(address,address,uint256,string,string,string,string,string,string,string,uint256)"));
+        assertEq(abi.decode(abi.encodePacked(launchEvent.topics[1]), (address)), msg.sender);
+        assertEq(_token, token);
+        assertEq(targetMCapCore, 100 ether);
+        assertEq(name, param.name);
+        assertEq(symbol, param.symbol);
+        assertEq(description, param.description);
+        assertEq(image, param.image);
+        assertEq(twitterLink, param.twitterLink);
+        assertEq(telegramLink, param.telegramLink);
+        assertEq(website, param.website);
+        assertEq(timestamp, block.timestamp);
 
-    //     // ---- PRICE UPDATE EVENT TOPICS & DATA
-    //     assertEq(priceUpdateEvent.topics.length, 3);
-    //     assertEq(priceUpdateEvent.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
-    //     assertEq(abi.decode(abi.encodePacked(priceUpdateEvent.topics[1]), (address)), token);
-    //     assertEq(abi.decode(abi.encodePacked(priceUpdateEvent.topics[2]), (address)), msg.sender);
+        // ---- PRICE UPDATE EVENT TOPICS & DATA
+        assertEq(priceUpdateEvent.topics.length, 3);
+        assertEq(priceUpdateEvent.topics[0], keccak256("PriceUpdate(address,address,uint256,uint256,uint256)"));
+        assertEq(abi.decode(abi.encodePacked(priceUpdateEvent.topics[1]), (address)), token);
+        assertEq(abi.decode(abi.encodePacked(priceUpdateEvent.topics[2]), (address)), msg.sender);
         
-    //     // ---- POOL VERIFICATION ----
-    //     (
-    //         MoonLaunchToken token_, uint256 tokenReserve, , uint256 ethReserve,,,, uint256 lastPrice, uint256 lastMcapInEth,
-    //         uint256 lastTs, uint256 lastBlock, address creator, bool migrated
-    //     ) = curve.tokenPool(token);
-    //     assertEq(migrated, false);
-    //     //assertEq(virtualEthReserve, initVirtualEthReserve);
-    //     assertEq(ethReserve, 0);
-    //     assertEq(lastTs, block.timestamp);
-    //     assertEq(lastBlock, block.number);
-    //     assertEq(creator, msg.sender);
-    //     assertEq(tokenReserve, curve.INIT_REAL_TOKEN_RESERVE());
-    //     //assertEq(virtualTokenReserve, curve.INIT_VIRTUAL_TOKEN_RESERVE());
-    //     //assertEq(lastPrice, initVirtualEthReserve.divWadDown(virtualTokenReserve));
-    //     assertEq(lastMcapInEth, curve.TOTAL_SUPPLY().mulWadUp(lastPrice));
+        // ---- POOL VERIFICATION ----
+        (
+            MoonLaunchToken token_, uint256 tokenReserve, , uint256 ethReserve,,,, uint256 lastPrice, uint256 lastMcapInEth,
+            uint256 lastTs, uint256 lastBlock, address creator, bool migrated
+        ) = curve.tokenPool(token);
+        assertEq(migrated, false);
+        //assertEq(virtualEthReserve, initVirtualEthReserve);
+        assertEq(ethReserve, 0);
+        assertEq(lastTs, block.timestamp);
+        assertEq(lastBlock, block.number);
+        assertEq(creator, msg.sender);
+        assertEq(tokenReserve, curve.INIT_REAL_TOKEN_RESERVE());
+        //assertEq(virtualTokenReserve, curve.INIT_VIRTUAL_TOKEN_RESERVE());
+        //assertEq(lastPrice, initVirtualEthReserve.divWadDown(virtualTokenReserve));
+        assertEq(lastMcapInEth, curve.TOTAL_SUPPLY().mulWadUp(lastPrice));
 
 
-    //     // ---- TOKEN CHECKS ----
-    //     assertEq(address(token_), token);
-    //     assertEq(token_.curve(), address(curve));
-    //     assertEq(token_.creator(), msg.sender);
-    //     assertEq(token_.isApprovable(), false);
+        // ---- TOKEN CHECKS ----
+        assertEq(address(token_), token);
+        assertEq(token_.curve(), address(curve));
+        assertEq(token_.creator(), msg.sender);
+        assertEq(token_.isApprovable(), false);
 
-    //     // ---- CREATION FEE CHECKS ----
-    //     assertEq(afterLaunchFeeCollectorBal - beforeLaunchFeeCollectorBal, creationFee);
-    //     assertEq(beforeLaunchCreatorBal - afterLaunchCreatorBal, creationFee);
-    // }
+        // ---- CREATION FEE CHECKS ----
+        assertEq(afterLaunchFeeCollectorBal - beforeLaunchFeeCollectorBal, creationFee);
+        assertEq(beforeLaunchCreatorBal - afterLaunchCreatorBal, creationFee);
+    }
 
     // function test_swap_eth_for_tokens() public {
     //     vm.deal(trader, 100 ether);

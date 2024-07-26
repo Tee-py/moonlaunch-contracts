@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { FixedPointMathLib } from "@solmate/utils/FixedPointMathLib.sol";
 import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
 import { ERC20 } from "@solmate/tokens/ERC20.sol";
-import 'forge-std/console.sol';
 
 error NotPermitted();
 error Paused();
@@ -68,6 +67,7 @@ contract BondingCurveAMM is ReentrancyGuard {
     event TokenLaunch(
         address indexed creator,
         address token,
+        uint256 targetMCapCore,
         string name,
         string symbol,
         string description,
@@ -162,6 +162,7 @@ contract BondingCurveAMM is ReentrancyGuard {
         emit TokenLaunch(
             msg.sender,
             address(token),
+            pool.targetMCap,
             param.name,
             param.symbol,
             param.description,
