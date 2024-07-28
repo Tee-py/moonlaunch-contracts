@@ -1,6 +1,6 @@
 # MoonLaunch Contracts
 
-This repository contains the core smart contracts for [MoonLaunch](https://core-launch.netlify.app/), a decentralized application designed to facilitate fair and transparent token launches on the Core Chain chain.
+This repository contains the core smart contracts for [MoonLaunch](https://moon-launch.netlify.app/), a decentralized application designed to facilitate fair and transparent token launches on the Core Chain chain.
 
 ## MoonLaunch Bonding Curve
 
@@ -14,7 +14,7 @@ This is the main [contract](/src/Curve.sol) that powers token launches, trading 
 | CoreDao Testnet  | [0xFcA69B9033C414cBCfa24b30228376fd040b70B2](https://scan.test.btcs.network/address/0xFcA69B9033C414cBCfa24b30228376fd040b70B2#transactions) |
 
 ## MoonLaunch Token
-This is the [token contract](/src/Token.sol) code for all tokens launched on [MoonLaunch](https://core-launch.netlify.app/).
+This is the [token contract](/src/Token.sol) code for all tokens launched on [MoonLaunch](https://moon-launch.netlify.app/).
 
 ## Development
 
