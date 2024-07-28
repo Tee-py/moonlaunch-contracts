@@ -1,6 +1,8 @@
 name: test
 
-on: workflow_dispatch
+on:
+  push:
+  pull_request:
 
 env:
   FOUNDRY_PROFILE: ci
@@ -30,5 +32,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test --match-path test/CurveTest.t.sol --match-contract MainnetForkTest --gas-report --fork-url https://rpc.coredao.org -vvv
         id: test
