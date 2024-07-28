@@ -36,6 +36,8 @@ jobs:
         run: node utils/verifyTokens.js
         env:
           NODE_ENV: production
+          CORESCAN_API: ${{secrets.CORESCAN_API}}
+          CORESCAN_TESTNET_API: ${{secrets.CORESCAN_TESTNET_API}}
           MAINNET_RPC_URL: ${{secrets.MAINNET_RPC_URL}}
           CORESCAN_API_KEY: ${{secrets.CORESCAN_API_KEY}}
           CORESCAN_TESTNET_API_KEY: ${{secrets.CORESCAN_TESTNET_API_KEY}}
