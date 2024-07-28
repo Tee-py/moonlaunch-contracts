@@ -1,66 +1,40 @@
-## Foundry
+# MoonLaunch Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repository contains the core smart contracts for [MoonLaunch](https://core-launch.netlify.app/), a decentralized application designed to facilitate fair and transparent token launches on the Core Chain chain.
 
-Foundry consists of:
+## MoonLaunch Bonding Curve
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+This is the main [contract](/src/Curve.sol) that powers token launches, trading and liquidity migration.
 
-## Documentation
+### Deployment Addresses
 
-https://book.getfoundry.sh/
+|  Blockchain  |                                                            Address                                                            |
+| :----------: | :---------------------------------------------------------------------------------------------------------------------------: |
+| CoreDao Mainnet | [0xD62BfbF2050e8fEAD90e32558329D43A6efce4C8](https://scan.coredao.org/address/0xd62bfbf2050e8fead90e32558329d43a6efce4c8#transactions) |
+| CoreDao Testnet  | [0xFcA69B9033C414cBCfa24b30228376fd040b70B2](https://scan.test.btcs.network/address/0xFcA69B9033C414cBCfa24b30228376fd040b70B2#transactions) |
 
-## Usage
+## MoonLaunch Token
+This is the [token contract](/src/Token.sol) code for all tokens launched on [MoonLaunch](https://core-launch.netlify.app/).
 
-### Build
+## Development
 
-```shell
-$ forge build
+### Installation
+
+- Clone the repository
+- `cd ramp-contracts`
+- Install foundry: `curl -L https://foundry.paradigm.xyz | bash`
+- Set up .env according to [.env.example](/.env.example)
+
+### Testing
+The smart contract tests can be found in [CurveTest.t.sol](/test/CurveTest.t.sol)
+Run Foundry Tests:
+- Modify test [script](/runtests.sh) permissions
+```bash
+chmod 700 ./runtests.sh
+```
+- Run test on CoreDao mainnet fork
+```bash
+./runtests.sh mainnet
 ```
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Built with love ❤️ from 🇳🇬🚀.
