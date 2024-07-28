@@ -1,4 +1,4 @@
-name: Verify Ramp Tokens
+name: Verify MoonLaunch Tokens
 
 on:
   schedule:
