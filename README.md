@@ -21,7 +21,7 @@ This is the [token contract](/src/Token.sol) code for all tokens launched on [Mo
 ### Installation
 
 - Clone the repository
-- `cd ramp-contracts`
+- `cd moonlaunch-contracts`
 - Install foundry: `curl -L https://foundry.paradigm.xyz | bash`
 - Set up .env according to [.env.example](/.env.example)
 
