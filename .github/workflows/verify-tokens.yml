@@ -33,7 +33,7 @@ jobs:
         id: build
 
       - name: Verify tokens
-        run: node utils/verifyTokens.js
+        run: chmod 700 verifyToken.sh && node utils/verifyTokens.js
         env:
           NODE_ENV: production
           CORESCAN_API: ${{secrets.CORESCAN_API}}

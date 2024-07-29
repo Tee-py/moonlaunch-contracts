@@ -71,7 +71,8 @@ const fetchTokens = async () => {
  * @throws {Error} If there is an error during verification.
  */
 const verifyToken = async (token) => {
-  const command = `forge verify-contract ${token.address} MoonLaunchToken --watch --chain-id ${token.chainId} --constructor-args $(cast abi-encode "constructor(string,string,address,address,uint256)" "${token.name}" "${token.symbol}" "${token.chainId === 1115 ? TESTNET_CURVE_ADDRESS : MAINNET_CURVE_ADDRESS}" "${token.creator}" "${RAMP_TOKEN_SUPPLY}")`;
+  //const command = `forge verify-contract ${token.address} MoonLaunchToken --watch --chain-id ${token.chainId} --constructor-args $(cast abi-encode "constructor(string,string,address,address,uint256)" "${token.name}" "${token.symbol}" "${token.chainId === 1115 ? TESTNET_CURVE_ADDRESS : MAINNET_CURVE_ADDRESS}" "${token.creator}" "${RAMP_TOKEN_SUPPLY}")`;
+  const command = `./verifyToken.sh ${parseInt(token.chainId) == 1115 ? "testnet" : "mainnet"} ${token.address} ${token.name} ${token.symbol} ${parseInt(token.chainId) == 1115 ? TESTNET_CURVE_ADDRESS : MAINNET_CURVE_ADDRESS} ${token.creator}`
 
   log.info(
     `verifying token: ${token.name} (${token.symbol}) chainId=${token.chainId}`,
