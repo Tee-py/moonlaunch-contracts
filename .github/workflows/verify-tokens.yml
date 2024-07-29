@@ -1,8 +1,9 @@
 name: Verify MoonLaunch Tokens
 
 on:
-  schedule:
-    - cron: "* * * * *" # Runs every hour
+  pull_request:
+  # schedule:
+  #   - cron: "* * * * *" # Runs every hour
 
   workflow_dispatch: # Allows manual triggering of the workflow
 
